@@ -83,6 +83,7 @@ BMA point estimates and posterior intervals for the regression coefficients and 
 
 \footnotesize
 <<quickstart>>=
+
 library(mombf)
 set.seed(1234)
 x <- matrix(rnorm(100*3),nrow=100,ncol=3)
@@ -108,6 +109,7 @@ coef(fit1)
 ypred= predict(fit1)
 head(ypred)
 cor(y, ypred[,1])
+
 @
 \normalsize
 
@@ -329,8 +331,10 @@ and \texttt{qmom}, \texttt{qemom} and \texttt{qimom} for quantiles.
 For instance, under a MOM prior $\tau=0.348$ gives $P(|\theta/\sqrt{\phi}|>0.2)=0.99$,
 
 <<priorp2g>>=
+
 priorp2g(.01, q=.2, prior='normalMom')
 2*pmom(-.2, tau=0.3483356)
+
 @
 
 For Accelerated Failure Time models $e^{\theta_j}$ is the increase in median survival time for a unit standard deviation increase in $x_j$ (for continuous variables) or between two categories (for discrete variables). A small change, say $<15\%$ (i.e. $\exp(|\theta_j|)<1.15$), is often viewed as practically irrelevant. By default we set $\tau$ such that
@@ -501,10 +505,12 @@ where the true regression coefficient for the third covariate is 0.
 
 \footnotesize
 <<varsel1>>=
+
 set.seed(2011*01*18)
 x <- matrix(rnorm(100*3),nrow=100,ncol=3)
 theta <- matrix(c(1,1,0),ncol=1)
 y <- x %*% theta + rnorm(100)
+
 @
 \normalsize
 
@@ -523,9 +529,11 @@ and \texttt{modelunifprior}, \texttt{modelcomplexprior} set uniform and complexi
 
 \footnotesize
 <<varsel2>>=
+
 priorCoef <- imomprior(tau=.133)
 priorDelta <- modelbbprior(alpha.p=1,beta.p=1)
 priorVar <- igprior(.01,.01)
+
 @
 \normalsize
 
@@ -538,6 +546,7 @@ and the marginal posterior inclusion probabilities for each covariate
 
 \footnotesize
 <<varsel3>>=
+
 fit1 <- modelSelection(y=y, x=x, center=FALSE, scale=FALSE,
 priorCoef=priorCoef, priorDelta=priorDelta, priorVar=priorVar)
 fit1$postMode
@@ -551,6 +560,7 @@ fit2$postMode
 fit2$margpp
 postProb(fit2,method='norm')
 postProb(fit2,method='exact')
+
 @
 \normalsize
 
@@ -572,11 +582,13 @@ which may result in the latter giving a posterior probability that converges to 
 
 \footnotesize
 <<varsel4>>=
+
 priorCoef <- zellnerprior(tau=nrow(x))
 fit3 <- modelSelection(y=y, x=x, center=FALSE, scale=FALSE, niter=10^2,
 priorCoef=priorCoef, priorDelta=priorDelta, priorVar=priorVar,
 method='Laplace')
 postProb(fit3)
+
 @
 \normalsize
 
@@ -603,11 +615,13 @@ which intuitively means we are interested in finding significant departures from
 
 \footnotesize
 <<varsel5>>=
+
 priorCoef <- imomprior(tau=.133)
 fit4 <- modelSelection(y=y, x=x, center=FALSE, scale=FALSE,
 priorCoef=priorCoef, priorDelta=priorDelta, priorVar=priorVar,
 priorSkew=imomprior(tau=.133),family='auto')
 head(postProb(fit4))
+
 @
 \normalsize
 
@@ -619,12 +633,14 @@ $p=4$ predictors. We load the data and fit a linear regression model.
 
 \footnotesize
 <<haldlm>>=
+
 data(hald)
 dim(hald)
 lm1 <- lm(hald[,1] ~ hald[,2] + hald[,3] + hald[,4] + hald[,5])
 summary(lm1)
 V <- summary(lm1)$cov.unscaled
 diag(V)
+
 @
 \normalsize
 
@@ -638,9 +654,11 @@ here we compare adaptive quadrature with a Monte Carlo estimate.
 
 \footnotesize
 <<three>>=
+
 mombf(lm1,coef=2,g=0.348)
 imombf(lm1,coef=2,g=.133,method='adapt')
 imombf(lm1,coef=2,g=.133,method='MC',B=10^5)
+
 @
 \normalsize
 
@@ -666,6 +684,7 @@ variable has an effect).
 
 \footnotesize
 <<rnlp>>=
+
 priorCoef <- momprior(tau=.348)
 priorDelta <- modelbbprior(alpha.p=1,beta.p=1)
 fit1 <- modelSelection(y=y, x=x, center=FALSE, scale=FALSE,
@@ -675,6 +694,7 @@ head(b)
 th <- rnlp(msfit=fit1,priorCoef=priorCoef,niter=10000)
 colMeans(th)
 head(th)
+
 @
 \normalsize
 
@@ -682,10 +702,11 @@ From this output we can obtain model-specific posterior means.
 
 \footnotesize
 <<rnlp>>=
+
 model <- apply(th!=0,1,function(z) paste(which(z),collapse=','))
 table(model)
-colMeans(th[model=='1,2,4',])
-colMeans(th[model=='1,2,3,4',])
+colMeans(th[model=='2,3,5',])
+
 @
 \normalsize
 
@@ -703,6 +724,7 @@ Note that the posterior mean is close to that obtained above.
 
 \footnotesize
 <<rnlponemodel>>=
+
 tau= 0.348
 shrinkage= nrow(x)*tau/(1+nrow(x)*tau)
 V= shrinkage * solve(t(x) %*% x)
@@ -710,6 +732,7 @@ m= as.vector(shrinkage * V %*% t(x) %*% y)
 phi= mean((y - x%*%m)^2)
 th= rnlp(m=m,V=phi * V,priorCoef=momprior(tau=tau))
 colMeans(th)
+
 @
 \normalsize
 
@@ -734,6 +757,7 @@ We then perform variable selection under Zellner's and the MOM prior.
 
 \footnotesize
 <<bmsortho>>=
+
 set.seed(1)
 p <- 200; n <- 210
 x <- scale(matrix(rnorm(n*p),nrow=n,ncol=p),center=TRUE,scale=TRUE)
@@ -755,6 +779,7 @@ priorCoef=momprior(tau=0.348)
 pm.mom <- postModeOrtho(y,x=x,priorCoef=priorCoef,priorDelta=priorDelta,
 priorVar=priorVar,bma=TRUE)
 head(pm.mom$models)
+
 @
 
 \texttt{postModelBlockDiag} returns a list with the best model of each size
@@ -818,6 +843,7 @@ The first block has three non-zero coefficients, the second block two and the re
 
 \footnotesize
 <<bmsblockdiag1>>=
+
 set.seed(1)
 p <- 100; n <- 110
 blocksize <- 10
@@ -836,6 +862,7 @@ th[blocks==1] <- c(rep(0,blocksize-3),c(.5,.75,1))
 th[blocks==2] <- c(rep(0,blocksize-2),c(.75,-1))
 phi <- 1
 y <- x %*% matrix(th,ncol=1) + rnorm(n,sd=sqrt(phi))
+
 @
 \normalsize
 
@@ -848,6 +875,7 @@ thus also helping identify the best model overall.
 
 \footnotesize
 <<bmsblockdiag2>>=
+
 priorCoef=zellnerprior(tau=n)
 priorDelta=modelbinomprior(p=1/p)
 priorVar=igprior(0.01,0.01)
@@ -856,6 +884,7 @@ priorDelta=priorDelta,priorVar=priorVar,bma=TRUE)
 
 head(pm$models)
 head(pm$postmean.model)
+
 @
 \normalsize
 
@@ -910,21 +939,25 @@ For reproducibility purposes we set the random number generator seed.
 
 \footnotesize
 <<six>>=
+
 set.seed(4*2*2008)
 n <- 50; theta <- c(log(2),0)
 x <- matrix(NA,nrow=n,ncol=2)
 x[,1] <- rnorm(n,0,1); x[,2] <- rnorm(n,.5*x[,1],1)
 p <- pnorm(x %*% matrix(theta,ncol=1))
 y <- rbinom(n,1,p)
+
 @
 \normalsize
 
 
 \footnotesize
 <<pmomLM>>=
+
 th <- pmomLM(y=y,x=x,xadj=rep(1,n),niter=10000)
 head(th$postModel)
 table(apply(th$postModel,1,paste,collapse=','))
+
 @
 \normalsize
 
@@ -950,6 +983,7 @@ setting $g=0.5$ for illustration.
 
 \footnotesize
 <<seven>>=
+
 glm1 <- glm(y~x[,1]+x[,2],family=binomial(link = "probit"))
 thetahat <- coef(glm1)
 V <- summary(glm1)$cov.scaled
@@ -958,6 +992,7 @@ bfmom.1 <- momknown(thetahat[2],V[2,2],n=n,g=g,sigma=1)
 bfimom.1 <- imomknown(thetahat[2],V[2,2],n=n,nuisance.theta=2,g=g,sigma=1)
 bfmom.1
 bfimom.1
+
 @
 \normalsize
 
@@ -966,10 +1001,12 @@ We now check whether the second covariate can be dropped.
 
 \footnotesize
 <<nine>>=
+
 bfmom.2 <- momknown(thetahat[3],V[3,3],n=n,g=g,sigma=1)
 bfimom.2 <- imomknown(thetahat[3],V[3,3],n=n,nuisance.theta=2,g=g,sigma=1)
 bfmom.2
 bfimom.2
+
 @
 \normalsize
 
@@ -980,10 +1017,12 @@ routines, passing a vector as the first argument and a matrix as the second argu
 
 \footnotesize
 <<ten>>=
+
 bfmom.0 <- momknown(thetahat[2:3],V[2:3,2:3],n=n,g=g,sigma=1)
 bfimom.0 <- imomknown(thetahat[2:3],V[2:3,2:3],n=n,nuisance.theta=2,g=g,sigma=1)
 bfmom.0
 bfimom.0
+
 @
 \normalsize
 
@@ -997,10 +1036,12 @@ We assume equal probabilities {\it a priori}.
 
 \footnotesize
 <<eleven>>=
+
 prior.prob <- rep(1/4,4)
 bf <- c(bfmom.0,bfmom.1,bfmom.2,1)
 pos.prob <- prior.prob*bf/sum(prior.prob*bf)
 pos.prob
+
 @
 \normalsize
 
@@ -1018,9 +1059,11 @@ We start by simulating univariate Normal data truly arising from a single compon
 
 \footnotesize
 <<mixtures1>>=
+
 set.seed(1)
 n=200; k=1:3
 x= rnorm(n)
+
 @
 \normalsize
 
@@ -1037,8 +1080,10 @@ The default $\texttt{q}$=3 helps discard components with small weights, since th
 
 \footnotesize
 <<mixtures2>>=
+
 fit= bfnormmix(x=x,k=k,q=3,q.niw=1,B=10^4)
 postProb(fit)
+
 @
 \normalsize
 
@@ -1051,6 +1096,7 @@ and \texttt{coef} to obtain the coresponding posterior means.
 
 \footnotesize
 <<mixturesNIW>>=
+
 mcmcout= postSamples(fit)
 names(mcmcout)
 names(mcmcout[[2]])
@@ -1059,6 +1105,7 @@ colMeans(mcmcout[[2]]$eta)
 parest= coef(fit)
 names(parest)
 parest[[2]]
+
 @
 \normalsize
 
@@ -1070,9 +1117,11 @@ are more separated than under the Normal-Dir-IW, as one would expect from the re
 
 \footnotesize
 <<mixturesMOMIW>>=
+
 w= postSamples(fit)[[2]]$momiw.weight
 apply(mcmcout[[2]]$eta, 2, weighted.mean, w=w)
 apply(mcmcout[[2]]$mu, 2, weighted.mean, w=w)
+
 @
 \normalsize
 
@@ -1082,12 +1131,14 @@ as expected given that the two components are well-separated (the means are 3 st
 
 \footnotesize
 <<mixture2comp>>=
+
 set.seed(1)
 n=200; k=1:3; probs= c(1/2,1/2)
 mu1= -1.5; mu2=  1.5
 x= rnorm(n) + ifelse(runif(n)<probs[1],mu1,mu2)
 fit= bfnormmix(x=x,k=k,q=3,q.niw=1,B=10^4)
 postProb(fit)
+
 @
 \normalsize
 

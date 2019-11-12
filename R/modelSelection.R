@@ -37,11 +37,12 @@ hasPostSampling <- function(object) {
   outcomefam= paste(outcometype,family,sep=',')
   if (hasgroups) {
     outcomefamprior= paste(outcomefam,priorCoef,priorGroup,sep=',')
+    exactsampling= outcomefamprior  %in% apply(hassamples,1,paste,collapse=',')
   } else {
-    outcomefamprior= paste(outcomefam,priorCoef)
+    outcomefamprior= paste(outcomefam,priorCoef,sep=',')
+    exactsampling= outcomefamprior  %in% apply(hassamples[,1:3],1,paste,collapse=',')
   }
   found= outcomefam %in% apply(hassamples[,1:2],1,paste,collapse=',')
-  exactsampling= outcomefamprior  %in% apply(hassamples,1,paste,collapse=',')
   if (!found) {
     cat("Inference on parameters currently only available for the following settings: \n\n")
     print(hassamples)

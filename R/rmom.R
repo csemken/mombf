@@ -40,6 +40,7 @@ setMethod("rnlp", signature(y='missing',x='missing',m='missing',V='missing',msfi
   #Return posterior samples in non-standardized parameterization
   ans= unstdcoef(ans,p=ncol(x),msfit=msfit,coefnames=nn)
   #
+  #Old code, moved to unstdcoef
   #my= msfit$stdconstants[1,'shift']; mx= msfit$stdconstants[-1,'shift']
   #sy= msfit$stdconstants[1,'scale']; sx= msfit$stdconstants[-1,'scale']
   #ct= (sx==0)
@@ -59,19 +60,20 @@ setMethod("rnlp", signature(y='missing',x='missing',m='missing',V='missing',msfi
 
 
 #Return posterior samples in non-standardized parameterization
-unstdcoef <- function(ans, p, msfit, coefnames) {
+unstdcoef <- function(ans, p, msfit, coefnames, sel=1:p) {
   my= msfit$stdconstants[1,'shift']; mx= msfit$stdconstants[-1,'shift']
   sy= msfit$stdconstants[1,'scale']; sx= msfit$stdconstants[-1,'scale']
   ct= (sx==0)
-  b= ans[,1:p]
-  b[,!ct]= t(t(b[,!ct])*sy/sx[!ct])  #re-scale regression coefficients
+  b= ans[,sel,drop=FALSE]
+  b[,!ct]= t(t(b[,!ct,drop=FALSE])*sy/sx[!ct])  #re-scale regression coefficients
   if (any(ct)) {
-      b[,ct]= my + sy*b[,ct] - colSums(t(b[,!ct,drop=FALSE])*mx[!ct]) #adjust intercept, if already present
-      ans[,1:p]= b
+    b[,ct]= my + sy*b[,ct] - colSums(t(b[,!ct,drop=FALSE])*mx[!ct]) #adjust intercept, if already present
+    ans[,sel]= b
   } else {
-      intercept= my - colSums(t(b[,!ct,drop=FALSE])*mx[!ct]) #add intercept, if not already present
-      ans= cbind(intercept,b,ans[,-1:-p]); colnames(ans)= c('intercept',coefnames)
+    intercept= my - colSums(t(b[,!ct,drop=FALSE])*mx[!ct]) #add intercept, if not already present
+    ans= cbind(intercept,b,ans[,-1:-p]); colnames(ans)= c('intercept',coefnames)
   }
+  ans= ans[,sel,drop=FALSE]
   if ('phi' %in% coefnames) ans[,'phi']= sy^2*ans[,'phi'] #re-scale residual variance
   return(ans)
 }
@@ -155,6 +157,7 @@ rnlpLM <- function(y, x, m, V, msfit, priorCoef, priorGroup, priorVar, niter=10^
 setMethod("rnlp", signature(y='missing',x='missing',m='numeric',V='matrix',msfit='missing',outcometype='missing',family='missing'), function(y, x, m, V, msfit, outcometype, family, priorCoef, priorGroup, priorVar, niter=10^3, burnin=round(niter/10), thinning=1, pp='norm') {
   p <- ncol(V)
   tau <- as.double(priorCoef@priorPars['tau'])
+  if (missing(priorGroup)) priorGroup= priorCoef
   if ((priorCoef@priorDistr %in% c('pMOM','peMOM','piMOM')) && (priorCoef@priorDistr == priorGroup@priorDistr)) {
     if (priorCoef@priorDistr=='pMOM') {
       prior <- as.integer(0); r <- as.integer(priorCoef@priorPars['r'])
