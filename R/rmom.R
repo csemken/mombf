@@ -60,6 +60,7 @@ setMethod("rnlp", signature(y='missing',x='missing',m='missing',V='missing',msfi
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #Return posterior samples in non-standardized parameterization
 unstdcoef <- function(ans, p, msfit, coefnames, sel=1:p) {
   my= msfit$stdconstants[1,'shift']; mx= msfit$stdconstants[-1,'shift']
@@ -90,6 +91,20 @@ unstdcoef <- function(bstd, p, msfit, coefnames) {
   my= msfit$stdconstants[1,'shift']; mx= msfit$stdconstants[-1,'shift']
   sy= msfit$stdconstants[1,'scale']; sx= msfit$stdconstants[-1,'scale']
   ct= (sx==0)
+=======
+#Return regression parameter estimates in the parameterization of non-standardized X's (i.e. where X does not have 0 mean, unit variance)
+# Input
+# - bstd: regression parameters, a matrix with columns corresponding to parameters and rows corresponding to different models / MCMC samples
+# - p: columns 1:p in bstd contain regression coefficients for covariate effects, this is to consider that subsequent columns could contain nuisance parameters (phi, the residual variance in linear regression)
+# - msfit: object returned by modelSelection.
+# - coefnames: names that should be assigned to the output columns
+#
+# Output: matrix with same dimension as bstd, containing parameter estimates for non-standardized X's
+unstdcoef <- function(bstd, p, msfit, coefnames) {
+  my= msfit$stdconstants[1,'shift']; mx= msfit$stdconstants[-1,'shift']
+  sy= msfit$stdconstants[1,'scale']; sx= msfit$stdconstants[-1,'scale']
+  ct= (sx==0)
+>>>>>>> master
   b= bstd[,1:p]
   b[,!ct]= t(t(b[,!ct])*sy/sx[!ct])  #re-scale regression coefficients
   if (any(ct)) {
@@ -101,7 +116,10 @@ unstdcoef <- function(bstd, p, msfit, coefnames) {
   }
   if ('phi' %in% coefnames) bstd[,'phi']= sy^2*bstd[,'phi'] #re-scale residual variance
   return(bstd)
+<<<<<<< HEAD
 >>>>>>> Added storage of posterior means and variances
+=======
+>>>>>>> master
 }
 
 
